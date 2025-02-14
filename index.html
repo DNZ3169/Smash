@@ -1,0 +1,422 @@
+<!DOCTYPE html>
+<html lang="en" >
+<head>
+  <meta charset="UTF-8">
+  <title>Untitled</title>
+  
+
+</head>
+<body>
+<!-- partial:index.partial.html -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <!-- Updated viewport meta tag to disable zooming -->
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <title>SMASH</title>
+  <style>
+    :root {
+      /* Colors and typography from your provided UI */
+      --bg: #222;              /* Dark background */
+      --text-color: #fff;      /* White text */
+      --accent-color: #ff1177;  /* Neon red accent */
+    }
+    
+    /* Reset & Base Styles */
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+    html, body {
+      height: 100%;
+      font-family: Arial, sans-serif;
+      background: var(--bg);
+      color: var(--text-color);
+      overflow: hidden;
+    }
+    
+    /* Fixed Header */
+    #header {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      padding: 15px;
+      text-align: center;
+      background: rgba(0, 0, 0, 0.9);
+      border-bottom: 1px solid var(--accent-color);
+      z-index: 1001;
+    }
+    #game-title {
+      font-size: 2.5em;
+      text-shadow: 0 0 10px var(--accent-color), 0 0 20px var(--accent-color);
+    }
+    
+    /* Main Container */
+    .container {
+      max-width: 500px;
+      margin: 50px auto;
+      padding: 0 10px;
+      text-align: center;
+    }
+    
+    /* Start Screen */
+    #start-screen {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: var(--bg);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding-top: 80px; /* Offset for header */
+      animation: flicker 2s infinite;
+    }
+    @keyframes flicker {
+      0% { opacity: 0.95; }
+      50% { opacity: 1; }
+      100% { opacity: 0.95; }
+    }
+    
+    /* Start Button */
+    #startBtn {
+      background: none;
+      color: var(--accent-color);
+      border: 2px solid var(--accent-color);
+      padding: 15px 30px;
+      font-size: 1.5em;
+      border-radius: 8px;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      text-transform: uppercase;
+    }
+    #startBtn:hover {
+      background: var(--accent-color);
+      color: var(--text-color);
+      box-shadow: 0 0 10px var(--accent-color), 0 0 20px var(--accent-color);
+    }
+    
+    /* Game Screen */
+    #game-screen {
+      display: none;
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: var(--bg);
+      padding-top: 80px;
+    }
+    
+    /* Name Container as CSS Grid */
+    #name-container {
+      display: grid;
+      grid-template-columns: 1fr auto 1fr;
+      align-items: center;
+      justify-items: center;
+      gap: 20px;
+      height: calc(100% - 80px);
+    }
+    
+    /* Name Boxes */
+    .name-box {
+      background: rgba(255, 255, 255, 0.05);
+      border: none;
+      border-radius: 8px;
+      padding: 20px;
+      font-size: 2em;
+      text-align: center;
+      cursor: pointer;
+      transition: transform 0.3s ease, box-shadow 0.3s ease;
+      position: relative;
+      overflow: hidden;
+    }
+    .name-box:hover {
+      transform: scale(1.05);
+      box-shadow: 0 0 15px var(--accent-color), 0 0 25px var(--accent-color);
+    }
+    
+    /* "or" Text */
+    .or-text {
+      font-size: 1.8em;
+      color: var(--accent-color);
+      text-shadow: 0 0 8px var(--accent-color);
+    }
+    
+    /* Flash Animation for clicked name */
+    @keyframes flash {
+      0% { box-shadow: 0 0 0px var(--accent-color); }
+      50% { box-shadow: 0 0 20px 5px var(--accent-color); }
+      100% { box-shadow: 0 0 0px var(--accent-color); }
+    }
+    
+    /* Emoji Explosion Effects */
+    .emoji {
+      position: absolute;
+      font-size: 1.5em;
+      opacity: 0;
+      animation: emoji-burst 1s forwards;
+      z-index: 1000;
+      pointer-events: none;
+    }
+    @keyframes emoji-burst {
+      0% { transform: translate(0, 0) scale(1); opacity: 1; }
+      100% { transform: translate(var(--x, 0), var(--y, 0)) scale(1.5); opacity: 0; }
+    }
+    
+    /* Pause Button (fixed in top-right) */
+    #pauseBtn {
+      position: fixed;
+      top: 10px;
+      right: 10px;
+      background: none;
+      border: 2px solid var(--accent-color);
+      color: var(--accent-color);
+      padding: 10px 15px;
+      font-size: 1.2em;
+      border-radius: 5px;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      z-index: 1002;
+    }
+    #pauseBtn:hover {
+      background: var(--accent-color);
+      color: var(--text-color);
+    }
+    
+    /* End Screen Overlay */
+    #end-screen {
+      display: none;
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0, 0, 0, 0.85);
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      z-index: 20;
+      padding: 20px;
+    }
+    #end-screen h1 {
+      margin-bottom: 20px;
+      font-size: 2.5em;
+    }
+    #finalStats {
+      text-align: left;
+      max-height: 60%;
+      overflow-y: auto;
+      width: 100%;
+      font-size: 1.2em;
+    }
+    
+    /* Responsive Adjustments for iPhone */
+    @media (max-width: 480px) {
+      .container { margin: 20px auto; }
+      #game-title { font-size: 2em; }
+      #startBtn { padding: 12px 24px; font-size: 1.2em; }
+      .name-box { padding: 15px; font-size: 1.5em; }
+      .or-text { font-size: 1.5em; }
+      #pauseBtn { padding: 8px 12px; font-size: 1em; }
+      #finalStats { font-size: 1em; }
+    }
+  </style>
+</head>
+<body>
+  <!-- Fixed Header -->
+  <div id="header">
+    <div id="game-title">🔥 SMASH 🔥</div>
+  </div>
+  
+  <!-- Main Container -->
+  <div class="container">
+    <!-- Start Screen -->
+    <div id="start-screen">
+      <button id="startBtn" class="btn">SMASH</button>
+    </div>
+    
+    <!-- Game Screen -->
+    <div id="game-screen">
+      <div id="name-container">
+        <!-- Two name boxes with a centered "or" will be injected here -->
+      </div>
+    </div>
+  </div>
+  
+  <!-- End Screen Overlay -->
+  <div id="end-screen">
+    <h1>Game Over!</h1>
+    <div id="finalStats"></div>
+    <p>Refresh the page to play again.</p>
+  </div>
+  
+  <!-- Pause Button (fixed) -->
+  <button id="pauseBtn">⏸️</button>
+  
+  <script>
+    // List of Names
+    const names = [
+      "Louise BUCHET", "Mélissa", "Lucie DOURVER", "Éléonore DUHART",
+      "Sophia", "Zoé", "Gabriela JOUIS", "Gabrielle LANHER", "Ava LAUGIER",
+      "Daphné", "Eva NDIAYE", "Éléonora ORSO", "Mathilde", "Maria Chiara",
+      "Charlie", "Joanna", "Yael", "Leyli ASDAGHI", "Inès", "Sara", "Selene",
+      "Emilie CARRERE", "Naomi", "Anna Chouraqui", "Ava Fleury", "Maud",
+      "Maliha", "Anna Laflaquiere", "Sarah", "Alix", "Kheira BAGUI",
+      "Elena BONIN", "Zoe BOURISSAUX", "Camille", "Lisa CARRERE",
+      "Isabella", "Gabrielle Haller", "Eleanor HASCOET", "Audrey",
+      "Marina MANIDINHARAT", "Margaux", "Constance", "Liana", "Giulia",
+      "Sana SEOUDI", "Léna WOLKO", "Irene", "Anyssa", "Anaïs",
+      "Chloé Costa", "Alma CRAEN", "Charlotte DAYEN", "Micha", "Sarah Heller",
+      "Ada", "Rei", "June JARMOUNE", "Elizaveta LARCEVA", "Judith MENNESSON",
+      "Chiara NUCCI", "Taiss", "Aline", "Gabrielle Rayna", "Ylianna", "Asrin",
+      "Cybelle", "Chloé THIRION", "Dune", "Nelly", "Sima", "Maya",
+      "Romy de la hess", "Charmaine", "Antonio", "Tess-Ever", "Camille Muzard",
+      "Aditi", "Hannah", "Clarisse", "Flora", "Sydney", "Aja", "Lahna AMMOUR",
+      "Kyra", "Alice BENDAHAN", "Lina BEN", "Rose", "Elise", "Emma Faldi",
+      "Jasmine", "Romy EL KOBBY", "Cassia", "Elsa LELOUCHE", "Camille POURQUE",
+      "Sirine", "Leah sorel", "Emma SRAER", "Lola TUKHTABAYEVA", "Ece",
+      "Asline", "Chloé Benzekri", "Juliette", "Sakura", "Elie", "Luna mia",
+      "Anna Lefebvre", "Stella", "Roxane", "Éléonore", "Artemise", "Raphaële Sorel",
+      "Eugenie", "Ella", "Judith Zhang", "Lorraine", "Giorgia DEL GOBBO",
+      "Alice DI RITO", "Electra", "Valentine", "Ciara Prioux", "Sarah Sarhdaqui"
+    ];
+    
+    let roundsPlayed = 0;
+    let smashCount = 0;
+    let smashList = [];
+    let shownNames = new Set();
+    let isPaused = false;
+    
+    // Get two random names
+    function getRandomNames() {
+      const index1 = Math.floor(Math.random() * names.length);
+      let index2;
+      do { index2 = Math.floor(Math.random() * names.length); } while (index1 === index2);
+      return [names[index1], names[index2]];
+    }
+    
+    // Display two name boxes with "or" between them
+    function displayNames() {
+      // End game if all names have been shown at least once
+      if (shownNames.size >= names.length) {
+        endGame();
+        return;
+      }
+      roundsPlayed++;
+      
+      const [name1, name2] = getRandomNames();
+      // Record that these names have been shown
+      shownNames.add(name1);
+      shownNames.add(name2);
+      
+      const container = document.getElementById("name-container");
+      container.innerHTML = "";
+      
+      const box1 = document.createElement("div");
+      box1.className = "name-box";
+      box1.innerText = name1;
+      
+      const orText = document.createElement("div");
+      orText.className = "or-text";
+      orText.innerText = "or";
+      
+      const box2 = document.createElement("div");
+      box2.className = "name-box";
+      box2.innerText = name2;
+      
+      box1.addEventListener("click", () => {
+        if (isPaused) return;
+        smashCount++;
+        smashList.push(name1);
+        box1.style.animation = "flash 0.5s forwards";
+        emojiExplosion();
+        box2.style.opacity = 0;
+        setTimeout(displayNames, 2000);
+      });
+      
+      box2.addEventListener("click", () => {
+        if (isPaused) return;
+        smashCount++;
+        smashList.push(name2);
+        box2.style.animation = "flash 0.5s forwards";
+        emojiExplosion();
+        box1.style.opacity = 0;
+        setTimeout(displayNames, 2000);
+      });
+      
+      container.appendChild(box1);
+      container.appendChild(orText);
+      container.appendChild(box2);
+    }
+    
+    // Create an emoji explosion effect
+    function emojiExplosion() {
+      const emojis = ['🔥','😏','💕','💯'];
+      const count = 60;
+      for (let i = 0; i < count; i++) {
+        const span = document.createElement("span");
+        span.className = "emoji";
+        span.innerText = emojis[Math.floor(Math.random() * emojis.length)];
+        span.style.left = Math.random() * window.innerWidth + "px";
+        span.style.top = Math.random() * window.innerHeight + "px";
+        span.style.setProperty("--x", (Math.random() * 200 - 100) + "px");
+        span.style.setProperty("--y", (Math.random() * 200 - 100) + "px");
+        document.body.appendChild(span);
+        setTimeout(() => span.remove(), 1000);
+      }
+    }
+    
+    // End the game and display final stats including the most chosen name
+    function endGame() {
+      document.querySelector(".container").style.display = "none";
+      document.getElementById("end-screen").style.display = "flex";
+      
+      // Calculate frequencies for smashed names
+      const frequency = {};
+      smashList.forEach(name => {
+        frequency[name] = (frequency[name] || 0) + 1;
+      });
+      let mostChosen = "";
+      let maxCount = 0;
+      for (let name in frequency) {
+        if (frequency[name] > maxCount) {
+          mostChosen = name;
+          maxCount = frequency[name];
+        }
+      }
+      
+      const statsHTML = `
+        <h2>Final Score</h2>
+        <p>Total Smashes: ${smashCount}</p>
+        <p>Most Chosen Name: ${mostChosen} (${maxCount} times)</p>
+        <h3>Smash List:</h3>
+        <ul>${smashList.map(n => `<li>${n}</li>`).join('')}</ul>
+      `;
+      document.getElementById("finalStats").innerHTML = statsHTML;
+    }
+    
+    // Pause button toggles pause state
+    document.getElementById("pauseBtn").addEventListener("click", () => {
+      isPaused = !isPaused;
+      document.getElementById("pauseBtn").style.opacity = isPaused ? 0.5 : 1;
+    });
+    
+    // Start the game
+    document.getElementById("startBtn").addEventListener("click", () => {
+      document.getElementById("start-screen").style.display = "none";
+      document.getElementById("game-screen").style.display = "block";
+      displayNames();
+    });
+  </script>
+</body>
+</html>
+<!-- partial -->
+  
+</body>
+</html>
