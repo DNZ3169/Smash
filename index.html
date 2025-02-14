@@ -12,12 +12,11 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <!-- Updated viewport meta tag to disable zooming -->
+  <!-- Prevent zooming for a consistent mobile experience -->
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
   <title>SMASH</title>
   <style>
     :root {
-      /* Colors and typography from your provided UI */
       --bg: #222;              /* Dark background */
       --text-color: #fff;      /* White text */
       --accent-color: #ff1177;  /* Neon red accent */
@@ -113,13 +112,13 @@
       padding-top: 80px;
     }
     
-    /* Name Container as CSS Grid */
+    /* Name Container as CSS Grid with reduced gap */
     #name-container {
       display: grid;
       grid-template-columns: 1fr auto 1fr;
       align-items: center;
       justify-items: center;
-      gap: 20px;
+      gap: 10px; /* Reduced gap */
       height: calc(100% - 80px);
     }
     
@@ -218,13 +217,32 @@
     
     /* Responsive Adjustments for iPhone */
     @media (max-width: 480px) {
-      .container { margin: 20px auto; }
-      #game-title { font-size: 2em; }
-      #startBtn { padding: 12px 24px; font-size: 1.2em; }
-      .name-box { padding: 15px; font-size: 1.5em; }
-      .or-text { font-size: 1.5em; }
-      #pauseBtn { padding: 8px 12px; font-size: 1em; }
-      #finalStats { font-size: 1em; }
+      .container {
+        max-width: 90%;
+        margin: 10px auto;
+        padding: 0 5px;
+      }
+      #game-title {
+        font-size: 2em;
+      }
+      #startBtn {
+        padding: 12px 24px;
+        font-size: 1.2em;
+      }
+      .name-box {
+        padding: 15px;
+        font-size: 1.5em;
+      }
+      .or-text {
+        font-size: 1.5em;
+      }
+      #pauseBtn {
+        padding: 8px 12px;
+        font-size: 1em;
+      }
+      #finalStats {
+        font-size: 1em;
+      }
     }
   </style>
 </head>
@@ -238,7 +256,7 @@
   <div class="container">
     <!-- Start Screen -->
     <div id="start-screen">
-      <button id="startBtn" class="btn">SMASH</button>
+      <button id="startBtn">SMASH</button>
     </div>
     
     <!-- Game Screen -->
@@ -288,33 +306,30 @@
     ];
     
     let roundsPlayed = 0;
+    const maxRounds = 10;
     let smashCount = 0;
     let smashList = [];
-    let shownNames = new Set();
     let isPaused = false;
     
     // Get two random names
     function getRandomNames() {
-      const index1 = Math.floor(Math.random() * names.length);
+      let index1 = Math.floor(Math.random() * names.length);
       let index2;
-      do { index2 = Math.floor(Math.random() * names.length); } while (index1 === index2);
+      do {
+        index2 = Math.floor(Math.random() * names.length);
+      } while (index1 === index2);
       return [names[index1], names[index2]];
     }
     
     // Display two name boxes with "or" between them
     function displayNames() {
-      // End game if all names have been shown at least once
-      if (shownNames.size >= names.length) {
+      if (roundsPlayed >= maxRounds) {
         endGame();
         return;
       }
       roundsPlayed++;
       
       const [name1, name2] = getRandomNames();
-      // Record that these names have been shown
-      shownNames.add(name1);
-      shownNames.add(name2);
-      
       const container = document.getElementById("name-container");
       container.innerHTML = "";
       
@@ -372,12 +387,13 @@
       }
     }
     
-    // End the game and display final stats including the most chosen name
+    // End the game and display final stats
     function endGame() {
       document.querySelector(".container").style.display = "none";
       document.getElementById("end-screen").style.display = "flex";
       
-      // Calculate frequencies for smashed names
+      let statsHTML = `<h2>Final Score</h2>`;
+      statsHTML += `<p>Total Smashes: ${smashCount}</p>`;
       const frequency = {};
       smashList.forEach(name => {
         frequency[name] = (frequency[name] || 0) + 1;
@@ -390,14 +406,8 @@
           maxCount = frequency[name];
         }
       }
-      
-      const statsHTML = `
-        <h2>Final Score</h2>
-        <p>Total Smashes: ${smashCount}</p>
-        <p>Most Chosen Name: ${mostChosen} (${maxCount} times)</p>
-        <h3>Smash List:</h3>
-        <ul>${smashList.map(n => `<li>${n}</li>`).join('')}</ul>
-      `;
+      statsHTML += `<p>Most Chosen Name: ${mostChosen} (${maxCount} times)</p>`;
+      statsHTML += `<h3>Smash List:</h3><ul>${smashList.map(n => `<li>${n}</li>`).join('')}</ul>`;
       document.getElementById("finalStats").innerHTML = statsHTML;
     }
     
@@ -407,7 +417,7 @@
       document.getElementById("pauseBtn").style.opacity = isPaused ? 0.5 : 1;
     });
     
-    // Start the game
+    // Start game when Start button is clicked
     document.getElementById("startBtn").addEventListener("click", () => {
       document.getElementById("start-screen").style.display = "none";
       document.getElementById("game-screen").style.display = "block";
